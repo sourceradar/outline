@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	golang "github.com/tree-sitter/tree-sitter-go/bindings/go"
+	java "github.com/tree-sitter/tree-sitter-java/bindings/go"
 	javascript "github.com/tree-sitter/tree-sitter-javascript/bindings/go"
 	python "github.com/tree-sitter/tree-sitter-python/bindings/go"
 	typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
@@ -40,6 +41,8 @@ func ExtractOutline(content []byte, language string) (string, error) {
 	switch language {
 	case "go":
 		return languages.ExtractGoOutline(root, content), nil
+	case "java":
+		return languages.ExtractJavaOutline(root, content), nil
 	case "javascript":
 		return languages.ExtractJSOutline(root, content), nil
 	case "typescript":
@@ -58,6 +61,8 @@ func createParserForLanguage(language string) (*sitter.Parser, error) {
 	switch language {
 	case "go":
 		err = parser.SetLanguage(sitter.NewLanguage(golang.Language()))
+	case "java":
+		err = parser.SetLanguage(sitter.NewLanguage(java.Language()))
 	case "javascript":
 		err = parser.SetLanguage(sitter.NewLanguage(javascript.Language()))
 	case "typescript":

@@ -64,6 +64,8 @@ func OutlineToolHandler(ctx context.Context, cc *mcp.ServerSession, params *mcp.
 	switch ext {
 	case ".go":
 		language = "go"
+	case ".java":
+		language = "java"
 	case ".js":
 		language = "javascript"
 	case ".jsx":
