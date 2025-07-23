@@ -30,7 +30,7 @@ go install github.com/sourceradar/outline@latest
 
 Add to Claude Code:
 ```bash
-claude code mcp add outline outline --mcp
+claude mcp add -s user outline -- outline --mcp
 ```
 
 Or build from source:
