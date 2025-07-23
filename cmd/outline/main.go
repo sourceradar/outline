@@ -14,12 +14,12 @@ func main() {
 	var mcpMode bool
 	var language string
 	var help bool
-	
+
 	flag.BoolVar(&mcpMode, "mcp", false, "Run in MCP server mode")
 	flag.StringVar(&language, "language", "", "Override language detection (go, java, javascript, typescript, python)")
 	flag.BoolVar(&help, "help", false, "Show help message")
 	flag.BoolVar(&help, "h", false, "Show help message")
-	
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `outline - A code analysis tool that generates structured outlines
 
@@ -49,7 +49,7 @@ For MCP server mode, add to your MCP client configuration:
 }
 `)
 	}
-	
+
 	flag.Parse()
 
 	if help {
