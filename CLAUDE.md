@@ -9,6 +9,7 @@ This is an MCP (Model Context Protocol) server that provides code outline genera
 ## Supported Languages
 
 - **Go** (.go files) - Functions, methods, types, constants, variables, structs, interfaces
+- **Java** (.java files) - Classes, interfaces, enums, methods, constructors, fields, with modifiers and inheritance
 - **JavaScript** (.js, .jsx files) - Functions, classes, arrow functions
 - **TypeScript** (.ts, .tsx files) - Functions, classes, interfaces, types, with type annotations
 - **Python** (.py files) - Functions, classes (public symbols only)
@@ -50,6 +51,7 @@ go install
 - `outline/outline_tool.go` - MCP tool handler implementing the outline functionality and file extension detection
 - `outline/languages/` - Language-specific outline extractors:
   - `go.go` - Go language parser with struct/interface/method handling
+  - `java.go` - Java language parser with class/interface/enum/method handling and modifiers
   - `js.go` - JavaScript parser with class and function extraction
   - `ts.go` - TypeScript parser with type annotations and interfaces
   - `python.go` - Python parser filtering private symbols (underscore prefix)
@@ -79,6 +81,7 @@ Follow the pattern in CONTRIBUTING.md:
 - Each language parser follows recursive tree traversal using `processNode` functions
 - Documentation comments extracted when available (JSDoc, Go doc comments, Python docstrings)
 - Go parser handles methods with receivers, struct fields, and interface methods
+- Java parser extracts classes, interfaces, enums with modifiers, inheritance, and member visibility
 - TypeScript parser includes type annotations and extends/implements clauses
 - Python parser filters out private symbols (names starting with underscore)
 - All parsers generate readable outline format with proper indentation
@@ -113,6 +116,7 @@ Run language-specific tests: `go test ./outline/languages/ -v`
 - `github.com/tree-sitter/go-tree-sitter` - Core tree-sitter Go bindings  
 - Language-specific tree-sitter grammars:
   - `github.com/tree-sitter/tree-sitter-go`
+  - `github.com/tree-sitter/tree-sitter-java`
   - `github.com/tree-sitter/tree-sitter-javascript` 
   - `github.com/tree-sitter/tree-sitter-typescript`
   - `github.com/tree-sitter/tree-sitter-python`
