@@ -1,20 +1,23 @@
-# MCP Outline
+# Outline
 
-An MCP (Model Context Protocol) server that provides code outline generation for multiple programming languages using tree-sitter parsers. The server analyzes source code files and generates structured outlines showing functions, classes, types, and other symbols.
+A command-line code analysis tool that generates structured outlines for multiple programming languages using tree-sitter parsers. The tool analyzes source code files and generates clean outlines showing functions, classes, types, and other symbols.
+
+**Can also be used as an MCP (Model Context Protocol) server** for integration with Claude Desktop and other MCP clients.
 
 ## Features
 
-- **Multi-language support**: Go, JavaScript, TypeScript, Python
+- **Multi-language support**: Go, Java, JavaScript, TypeScript, Python
 - **Comprehensive symbol extraction**: Functions, classes, methods, types, interfaces, constants
-- **Documentation extraction**: JSDoc, Go doc comments, Python docstrings
-- **MCP integration**: Compatible with any MCP client
-- **Tree-sitter powered**: Fast and accurate parsing
+- **Documentation extraction**: JSDoc, Go doc comments, Python docstrings, Javadoc
+- **Fast and accurate**: Tree-sitter powered parsing
+- **Dual mode**: CLI tool and optional MCP server
 
 ## Supported Languages
 
 | Language   | File Extensions | Symbols Extracted |
 |------------|-----------------|-------------------|
 | Go         | `.go`           | Functions, methods, types, constants, variables, structs, interfaces |
+| Java       | `.java`         | Classes, interfaces, enums, methods, constructors, fields, with modifiers and inheritance |
 | JavaScript | `.js`, `.jsx`   | Functions, classes, arrow functions |
 | TypeScript | `.ts`, `.tsx`   | Functions, classes, interfaces, types, with type annotations |
 | Python     | `.py`           | Functions, classes (public symbols only) |
@@ -22,20 +25,40 @@ An MCP (Model Context Protocol) server that provides code outline generation for
 ## Installation
 
 ```bash
-go install github.com/sourceradar/mcp-outline@latest
+go install github.com/sourceradar/outline@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/sourceradar/mcp-outline.git
-cd mcp-outline
-go build .
+git clone https://github.com/sourceradar/outline.git
+cd outline
+go build ./cmd/outline
 ```
 
 ## Usage
 
-### As an MCP Server
+### CLI Tool (Primary Usage)
+
+Analyze a single file:
+
+```bash
+outline path/to/file.go
+```
+
+Override language detection:
+
+```bash
+outline --language go path/to/file.txt
+```
+
+### MCP Server Mode (Optional)
+
+Run as MCP server:
+
+```bash
+outline --mcp
+```
 
 Add to your MCP client configuration:
 
@@ -43,7 +66,8 @@ Add to your MCP client configuration:
 {
   "mcpServers": {
     "outline": {
-      "command": "mcp-outline"
+      "command": "outline",
+      "args": ["--mcp"]
     }
   }
 }
@@ -52,10 +76,10 @@ Add to your MCP client configuration:
 ### Development with MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector go run .
+npx @modelcontextprotocol/inspector go run ./cmd/outline -- --mcp
 ```
 
-### Tool Usage
+### MCP Tool Usage
 
 The server provides a single `outline` tool that accepts a file path:
 
@@ -63,7 +87,7 @@ The server provides a single `outline` tool that accepts a file path:
 {
   "name": "outline",
   "arguments": {
-    "file_path": "/path/to/your/source/file.go"
+    "file": "/path/to/your/source/file.go"
   }
 }
 ```
@@ -73,6 +97,8 @@ The server provides a single `outline` tool that accepts a file path:
 For a Go file:
 
 ```
+Language: go
+
 package main
 
 func main() {
@@ -99,7 +125,13 @@ func (c *Config) Validate() error {
 
 ```bash
 # Build the project
-go build .
+go build ./cmd/outline
+
+# Run CLI directly
+go run ./cmd/outline file.go
+
+# Run as MCP server
+go run ./cmd/outline --mcp
 
 # Run tests
 go test ./...
@@ -114,16 +146,20 @@ go mod tidy
 ### Project Structure
 
 ```
-├── main.go                    # MCP server entry point
-├── outline/
-│   ├── outline.go            # Main outline extraction logic
-│   ├── outline_tool.go       # MCP tool handler
-│   ├── util.go               # Tree-sitter utilities
+├── cmd/outline/main.go        # Application entry point
+├── pkg/outline/               # Core outline extraction
+│   ├── outline.go            # Main extraction logic
 │   └── languages/            # Language-specific parsers
 │       ├── go.go
+│       ├── java.go
 │       ├── js.go
 │       ├── ts.go
-│       └── python.go
+│       ├── python.go
+│       └── util.go
+├── internal/
+│   ├── cli/cli.go            # CLI implementation
+│   ├── server/               # MCP server implementation
+│   └── detector/             # Language detection
 └── go.mod                    # Go module definition
 ```
 
@@ -142,6 +178,6 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Dependencies
 
-- [MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk) - Official MCP Go SDK
+- [MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk) - Official MCP Go SDK (for MCP mode)
 - [Tree-sitter Go bindings](https://github.com/tree-sitter/go-tree-sitter) - Core tree-sitter functionality
 - Language-specific tree-sitter grammars for parsing support
