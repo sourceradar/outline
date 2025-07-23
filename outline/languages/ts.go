@@ -62,7 +62,8 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write function declaration
-				result.WriteString(fmt.Sprintf("%sfunction %s%s%s {\n", indent, name, paramText, returnText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sfunction %s%s%s { // line %d\n", indent, name, paramText, returnText, lineNum))
 				result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 				result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 			}
@@ -115,7 +116,8 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write method definition
-				result.WriteString(fmt.Sprintf("%s%s%s%s%s {\n", indent, prefix, name, paramText, returnText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%s%s%s%s%s { // line %d\n", indent, prefix, name, paramText, returnText, lineNum))
 				result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 				result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 			}
@@ -146,7 +148,8 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write class declaration
-				result.WriteString(fmt.Sprintf("%sclass %s%s {\n", indent, name, heritageText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sclass %s%s { // line %d\n", indent, name, heritageText, lineNum))
 
 				// Process class body
 				bodyNode := node.ChildByFieldName("body")
@@ -183,7 +186,8 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write interface declaration
-				result.WriteString(fmt.Sprintf("%sinterface %s%s {\n", indent, name, extendsText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sinterface %s%s { // line %d\n", indent, name, extendsText, lineNum))
 
 				// Process interface body for property and method signatures
 				bodyNode := node.ChildByFieldName("body")
@@ -302,10 +306,11 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 							}
 
 							// Write function
+							lineNum := getNodeLineNumber(node)
 							if valueNode.Kind() == "arrow_function" {
-								result.WriteString(fmt.Sprintf("%s%s %s = %s%s => {\n", indent, declType, name, paramText, returnText))
+								result.WriteString(fmt.Sprintf("%s%s %s = %s%s => { // line %d\n", indent, declType, name, paramText, returnText, lineNum))
 							} else {
-								result.WriteString(fmt.Sprintf("%s%s %s = function%s%s {\n", indent, declType, name, paramText, returnText))
+								result.WriteString(fmt.Sprintf("%s%s %s = function%s%s { // line %d\n", indent, declType, name, paramText, returnText, lineNum))
 							}
 							result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 							result.WriteString(fmt.Sprintf("%s}\n\n", indent))
@@ -340,7 +345,8 @@ func ExtractTSOutline(root *sitter.Node, content []byte) string {
 					}
 				}
 
-				result.WriteString(fmt.Sprintf("%stype %s = %s;\n\n", indent, name, typeValue))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%stype %s = %s; // line %d\n\n", indent, name, typeValue, lineNum))
 			}
 		}
 	}

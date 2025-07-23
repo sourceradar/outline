@@ -11,6 +11,11 @@ func getNodeText(node *sitter.Node, content []byte) string {
 	return string(content[node.StartByte():node.EndByte()])
 }
 
+// getNodeLineNumber returns the line number (1-indexed) of a node's start position
+func getNodeLineNumber(node *sitter.Node) uint {
+	return node.StartPosition().Row + 1
+}
+
 // findDocComment finds and aggregates documentation comments preceding a node
 func findDocComment(node *sitter.Node, content []byte, language string) string {
 	if node.Parent() == nil {

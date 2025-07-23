@@ -52,7 +52,8 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write function declaration
-				result.WriteString(fmt.Sprintf("%sfunction %s%s {\n", indent, name, paramText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sfunction %s%s { // line %d\n", indent, name, paramText, lineNum))
 				result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 				result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 			}
@@ -98,7 +99,8 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write method definition
-				result.WriteString(fmt.Sprintf("%s%s%s%s {\n", indent, prefix, name, paramText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%s%s%s%s { // line %d\n", indent, prefix, name, paramText, lineNum))
 				result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 				result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 			}
@@ -129,7 +131,8 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write class declaration
-				result.WriteString(fmt.Sprintf("%sclass %s%s {\n", indent, name, extendsText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sclass %s%s { // line %d\n", indent, name, extendsText, lineNum))
 
 				// Process class body
 				bodyNode := node.ChildByFieldName("body")
@@ -189,10 +192,11 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 							}
 
 							// Write function
+							lineNum := getNodeLineNumber(node)
 							if valueNode.Kind() == "arrow_function" {
-								result.WriteString(fmt.Sprintf("%s%s %s = %s => {\n", indent, declType, name, paramText))
+								result.WriteString(fmt.Sprintf("%s%s %s = %s => { // line %d\n", indent, declType, name, paramText, lineNum))
 							} else {
-								result.WriteString(fmt.Sprintf("%s%s %s = function%s {\n", indent, declType, name, paramText))
+								result.WriteString(fmt.Sprintf("%s%s %s = function%s { // line %d\n", indent, declType, name, paramText, lineNum))
 							}
 							result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 							result.WriteString(fmt.Sprintf("%s}\n\n", indent))

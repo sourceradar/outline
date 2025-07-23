@@ -147,18 +147,20 @@ func processType(node *tree_sitter.Node, content []byte, result *strings.Builder
 	}
 
 	if typeNode.Kind() == "struct_type" {
-		processStruct(result, indent, name, typeNode, content)
+		processStruct(result, indent, name, typeNode, content, node)
 	} else if typeNode.Kind() == "interface_type" {
 		// For interface types
-		processInterface(result, indent, name, typeNode, content)
+		processInterface(result, indent, name, typeNode, content, node)
 		result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 	} else {
-		result.WriteString(fmt.Sprintf("%stype %s %s\n\n", indent, name, typeText))
+		lineNum := getNodeLineNumber(node)
+		result.WriteString(fmt.Sprintf("%stype %s %s // line %d\n\n", indent, name, typeText, lineNum))
 	}
 }
 
-func processInterface(result *strings.Builder, indent string, name string, typeNode *tree_sitter.Node, content []byte) {
-	result.WriteString(fmt.Sprintf("%stype %s interface {\n", indent, name))
+func processInterface(result *strings.Builder, indent string, name string, typeNode *tree_sitter.Node, content []byte, declNode *tree_sitter.Node) {
+	lineNum := getNodeLineNumber(declNode)
+	result.WriteString(fmt.Sprintf("%stype %s interface { // line %d\n", indent, name, lineNum))
 
 	// Parse interface methods
 	if typeNode.NamedChildCount() == 0 {
@@ -195,9 +197,10 @@ func processInterface(result *strings.Builder, indent string, name string, typeN
 	}
 }
 
-func processStruct(result *strings.Builder, indent string, name string, typeNode *tree_sitter.Node, content []byte) {
+func processStruct(result *strings.Builder, indent string, name string, typeNode *tree_sitter.Node, content []byte, declNode *tree_sitter.Node) {
 	// For struct types
-	result.WriteString(fmt.Sprintf("%stype %s struct {\n", indent, name))
+	lineNum := getNodeLineNumber(declNode)
+	result.WriteString(fmt.Sprintf("%stype %s struct { // line %d\n", indent, name, lineNum))
 	defer result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 
 	// Parse struct fields
@@ -273,8 +276,9 @@ func processMethod(node *tree_sitter.Node, content []byte, result *strings.Build
 	}
 
 	// Write method declaration with dummy body
-	result.WriteString(fmt.Sprintf("%sfunc %s %s%s%s { //... }\n\n",
-		indent, receiverText, name, paramText, resultText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%sfunc %s %s%s%s { //... } // line %d\n\n",
+		indent, receiverText, name, paramText, resultText, lineNum))
 }
 
 func processFunction(node *tree_sitter.Node, content []byte, result *strings.Builder, indent string) {
@@ -309,7 +313,8 @@ func processFunction(node *tree_sitter.Node, content []byte, result *strings.Bui
 	}
 
 	// Write function declaration with dummy body
-	result.WriteString(fmt.Sprintf("%sfunc %s%s%s { //... }\n\n", indent, name, paramText, resultText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%sfunc %s%s%s { //... } // line %d\n\n", indent, name, paramText, resultText, lineNum))
 }
 
 // ExtractGoOutline extracts Go outline directly from the code

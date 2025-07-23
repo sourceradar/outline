@@ -72,7 +72,8 @@ func ExtractPythonOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write function definition
-				result.WriteString(fmt.Sprintf("%sdef %s%s%s:", indent, name, paramText, returnText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sdef %s%s%s: # line %d", indent, name, paramText, returnText, lineNum))
 				if doc != "" {
 					result.WriteString(fmt.Sprintf(" \"\"\"%s\"\"\"", doc))
 				}
@@ -100,7 +101,8 @@ func ExtractPythonOutline(root *sitter.Node, content []byte) string {
 				}
 
 				// Write class definition
-				result.WriteString(fmt.Sprintf("%sclass %s%s:\n", indent, name, baseText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%sclass %s%s: # line %d\n", indent, name, baseText, lineNum))
 
 				// Find documentation (Python uses docstrings inside the class body)
 				doc := ""
@@ -163,7 +165,8 @@ func ExtractPythonOutline(root *sitter.Node, content []byte) string {
 								}
 
 								// Write method definition
-								result.WriteString(fmt.Sprintf("%s    def %s%s%s:", indent, methodName, paramText, returnText))
+								methodLineNum := getNodeLineNumber(child)
+								result.WriteString(fmt.Sprintf("%s    def %s%s%s: # line %d", indent, methodName, paramText, returnText, methodLineNum))
 								if methodDoc != "" {
 									result.WriteString(fmt.Sprintf(" \"\"\"%s\"\"\"", methodDoc))
 								}

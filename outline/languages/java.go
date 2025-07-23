@@ -92,7 +92,8 @@ func processJavaClass(node *tree_sitter.Node, content []byte, result *strings.Bu
 		}
 	}
 
-	result.WriteString(fmt.Sprintf("%s%sclass %s%s%s {\n", indent, modifierText, name, superclassText, interfacesText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%s%sclass %s%s%s { // line %d\n", indent, modifierText, name, superclassText, interfacesText, lineNum))
 
 	// Process class body
 	bodyNode := node.ChildByFieldName("body")
@@ -140,7 +141,8 @@ func processJavaInterface(node *tree_sitter.Node, content []byte, result *string
 		}
 	}
 
-	result.WriteString(fmt.Sprintf("%s%sinterface %s%s {\n", indent, modifierText, name, extendsText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%s%sinterface %s%s { // line %d\n", indent, modifierText, name, extendsText, lineNum))
 
 	// Process interface body
 	bodyNode := node.ChildByFieldName("body")
@@ -178,7 +180,8 @@ func processJavaEnum(node *tree_sitter.Node, content []byte, result *strings.Bui
 		}
 	}
 
-	result.WriteString(fmt.Sprintf("%s%senum %s {\n", indent, modifierText, name))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%s%senum %s { // line %d\n", indent, modifierText, name, lineNum))
 
 	// Process enum body - constants and methods
 	bodyNode := node.ChildByFieldName("body")
@@ -251,7 +254,8 @@ func processJavaMethod(node *tree_sitter.Node, content []byte, result *strings.B
 		}
 	}
 
-	result.WriteString(fmt.Sprintf("%s%s%s %s%s%s { //... }\n\n", indent, modifierText, typeText, name, parametersText, throwsText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%s%s%s %s%s%s { //... } // line %d\n\n", indent, modifierText, typeText, name, parametersText, throwsText, lineNum))
 }
 
 func processJavaConstructor(node *tree_sitter.Node, content []byte, result *strings.Builder, indent string) {
@@ -295,7 +299,8 @@ func processJavaConstructor(node *tree_sitter.Node, content []byte, result *stri
 		}
 	}
 
-	result.WriteString(fmt.Sprintf("%s%s%s%s%s { //... }\n\n", indent, modifierText, name, parametersText, throwsText))
+	lineNum := getNodeLineNumber(node)
+	result.WriteString(fmt.Sprintf("%s%s%s%s%s { //... } // line %d\n\n", indent, modifierText, name, parametersText, throwsText, lineNum))
 }
 
 func processJavaField(node *tree_sitter.Node, content []byte, result *strings.Builder, indent string) {
@@ -328,7 +333,8 @@ func processJavaField(node *tree_sitter.Node, content []byte, result *strings.Bu
 					valueText = " = " + getNodeText(valueNode, content)
 				}
 
-				result.WriteString(fmt.Sprintf("%s%s%s %s%s;\n", indent, modifierText, typeText, name, valueText))
+				lineNum := getNodeLineNumber(node)
+				result.WriteString(fmt.Sprintf("%s%s%s %s%s; // line %d\n", indent, modifierText, typeText, name, valueText, lineNum))
 			}
 		}
 	}
