@@ -7,8 +7,6 @@ import (
 	sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-
-
 // ExtractTSOutline extracts TypeScript outline directly from the code
 func ExtractTSOutline(root *sitter.Node, content []byte) string {
 	var result strings.Builder

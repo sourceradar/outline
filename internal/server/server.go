@@ -36,6 +36,6 @@ func Run() error {
 	if err := server.Run(context.Background(), mcp.NewStdioTransport()); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	return nil
 }

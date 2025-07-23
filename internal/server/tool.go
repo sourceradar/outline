@@ -10,8 +10,6 @@ import (
 	"github.com/sourceradar/outline/pkg/outline"
 )
 
-
-
 // OutlineToolParams defines the parameters for the outline tool
 type OutlineToolParams struct {
 	File string `json:"file" jsonschema:"description=Path to the file to analyze"`

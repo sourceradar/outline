@@ -56,7 +56,7 @@ func processImport(node *tree_sitter.Node, content []byte, result *strings.Build
 	// Handle both single imports and import blocks
 	importText := getNodeText(node, content)
 	result.WriteString(fmt.Sprintf("%s%s\n", indent, importText))
-	
+
 	// Add extra newline after import blocks to separate from other declarations
 	if strings.Contains(importText, "(") {
 		result.WriteString("\n")

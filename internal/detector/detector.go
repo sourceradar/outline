@@ -8,7 +8,7 @@ import (
 // DetectLanguage determines the programming language based on file extension
 func DetectLanguage(filePath string) (string, bool) {
 	ext := strings.ToLower(filepath.Ext(filePath))
-	
+
 	switch ext {
 	case ".go":
 		return "go", true

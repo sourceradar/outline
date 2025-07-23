@@ -325,7 +325,7 @@ func processJavaField(node *tree_sitter.Node, content []byte, result *strings.Bu
 			nameNode := child.ChildByFieldName("name")
 			if nameNode != nil {
 				name := getNodeText(nameNode, content)
-				
+
 				// Get initializer if present
 				valueNode := child.ChildByFieldName("value")
 				valueText := ""
@@ -342,7 +342,7 @@ func processJavaField(node *tree_sitter.Node, content []byte, result *strings.Bu
 
 func getJavaModifiers(node *tree_sitter.Node, content []byte) []string {
 	var modifiers []string
-	
+
 	for i := uint(0); i < node.ChildCount(); i++ {
 		child := node.Child(i)
 		if child.Kind() == "modifiers" {
@@ -356,7 +356,7 @@ func getJavaModifiers(node *tree_sitter.Node, content []byte) []string {
 			break
 		}
 	}
-	
+
 	return modifiers
 }
 
