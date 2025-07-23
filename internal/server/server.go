@@ -19,13 +19,13 @@ func Run() error {
 	// Register the outline tool
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "outline",
-		Description: "Generate an outline of symbols in a file (functions, classes, types, etc.)",
+		Description: "Extract a structured, high-level overview of code symbols from source files. Shows function signatures, class definitions, interfaces, types, and documentation comments without implementation details. Ideal for understanding code architecture, APIs, and large codebases quickly. Supports Go, Java, JavaScript, TypeScript, and Python. More efficient than reading entire files when you need to understand code structure and available symbols.",
 		InputSchema: &jsonschema.Schema{
 			Type: "object",
 			Properties: map[string]*jsonschema.Schema{
 				"file": {
 					Type:        "string",
-					Description: "Path to the file to analyze",
+					Description: "Absolute or relative path to the source code file to analyze",
 				},
 			},
 			Required: []string{"file"},

@@ -28,6 +28,11 @@ A command-line code analysis tool that generates structured outlines for multipl
 go install github.com/sourceradar/outline@latest
 ```
 
+Add to Claude Code:
+```bash
+claude code mcp add outline outline --mcp
+```
+
 Or build from source:
 
 ```bash
@@ -60,7 +65,9 @@ Run as MCP server:
 outline --mcp
 ```
 
-Add to your MCP client configuration:
+#### Claude Desktop Integration
+
+Add to your Claude Desktop MCP configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
@@ -73,16 +80,25 @@ Add to your MCP client configuration:
 }
 ```
 
-### Development with MCP Inspector
+#### Other MCP Clients
+
+The server is compatible with any MCP client. For clients requiring stdio transport, use the same configuration format.
+
+#### Development with MCP Inspector
+
+Test the MCP server during development:
 
 ```bash
 npx @modelcontextprotocol/inspector go run ./cmd/outline -- --mcp
 ```
 
-### MCP Tool Usage
+This launches a web interface to test MCP tool calls interactively.
 
-The server provides a single `outline` tool that accepts a file path:
+#### MCP Tool Usage
 
+The server provides a single `outline` tool that accepts a file path parameter:
+
+**Example Usage:**
 ```json
 {
   "name": "outline",
@@ -91,6 +107,9 @@ The server provides a single `outline` tool that accepts a file path:
   }
 }
 ```
+
+**Response Format:**
+The tool returns a text response containing the structured outline with language detection and symbol extraction.
 
 ## Example Output
 
