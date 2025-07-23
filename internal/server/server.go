@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -6,13 +6,13 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/sourceradar/mcp-outline/outline"
 )
 
-func main() {
+// Run starts the MCP server
+func Run() error {
 	// Create server with implementation details
 	server := mcp.NewServer(&mcp.Implementation{
-		Name:    "mcp-outline",
+		Name:    "outline",
 		Version: "1.0.0",
 	}, nil)
 
@@ -30,10 +30,12 @@ func main() {
 			},
 			Required: []string{"file"},
 		},
-	}, outline.OutlineToolHandler)
+	}, OutlineToolHandler)
 
 	// Run server using stdio transport
 	if err := server.Run(context.Background(), mcp.NewStdioTransport()); err != nil {
 		log.Fatal(err)
 	}
+	
+	return nil
 }

@@ -1,6 +1,6 @@
-# Contributing to MCP Outline
+# Contributing to Outline
 
-Thank you for your interest in contributing to MCP Outline! This document provides guidelines for contributing to the project, including how to add support for new programming languages.
+Thank you for your interest in contributing to Outline! This document provides guidelines for contributing to the project, including how to add support for new programming languages.
 
 ## General Contributing Guidelines
 
@@ -16,11 +16,11 @@ Thank you for your interest in contributing to MCP Outline! This document provid
 
 ## Adding New Language Support
 
-This section explains how to add support for new programming languages to the MCP outline server.
+This section explains how to add support for new programming languages to the outline tool.
 
 ## Overview
 
-The MCP outline server uses tree-sitter parsers to analyze source code and generate structured outlines. Each language requires:
+The outline tool uses tree-sitter parsers to analyze source code and generate structured outlines. Each language requires:
 
 1. A tree-sitter grammar/parser
 2. Language-specific outline extraction logic
@@ -32,10 +32,10 @@ The MCP outline server uses tree-sitter parsers to analyze source code and gener
 To add support for a new language (e.g., Rust):
 
 1. **Add tree-sitter dependency** to `go.mod`
-2. **Create extractor** in `outline/languages/rust.go`
-3. **Update parser factory** in `outline/outline.go`
-4. **Add file extension mapping** in `outline/outline_tool.go`
-5. **Write tests** in `outline/languages/rust_test.go`
+2. **Create extractor** in `pkg/outline/languages/rust.go`
+3. **Update parser factory** in `pkg/outline/outline.go`
+4. **Add file extension mapping** in `internal/detector/`
+5. **Write tests** in `pkg/outline/languages/rust_test.go`
 
 ## Step-by-Step Guide
 
@@ -47,7 +47,7 @@ Add the tree-sitter grammar for your language to `go.mod`:
 go get github.com/tree-sitter/tree-sitter-rust/bindings/go
 ```
 
-Import it in `outline/outline.go`:
+Import it in `pkg/outline/outline.go`:
 
 ```go
 import (
@@ -58,7 +58,7 @@ import (
 
 ### 2. Create Language Extractor
 
-Create a new file `outline/languages/{language}.go` with the following structure:
+Create a new file `pkg/outline/languages/{language}.go` with the following structure:
 
 ```go
 package languages
@@ -150,7 +150,7 @@ func processFunctionDeclaration(node *sitter.Node, content []byte, result *strin
 
 ### 3. Update Parser Factory
 
-In `outline/outline.go`, add your language to the `createParserForLanguage` function:
+In `pkg/outline/outline.go`, add your language to the `createParserForLanguage` function:
 
 ```go
 func createParserForLanguage(language string) (*sitter.Parser, error) {
@@ -191,24 +191,24 @@ func ExtractOutline(content []byte, language string) (string, error) {
 
 ### 4. Add File Extension Mapping
 
-In `outline/outline_tool.go`, add file extension detection:
+In `internal/detector/detector.go`, add file extension detection:
 
 ```go
-func detectLanguage(filePath string) string {
+func DetectLanguage(filePath string) (string, bool) {
     ext := strings.ToLower(filepath.Ext(filePath))
     switch ext {
     // ... existing cases
     case ".rs":
-        return "rust"
+        return "rust", true
     default:
-        return ""
+        return "", false
     }
 }
 ```
 
 ### 5. Write Comprehensive Tests
 
-Create `outline/languages/{language}_test.go`:
+Create `pkg/outline/languages/{language}_test.go`:
 
 ```go
 package languages
@@ -463,9 +463,10 @@ When adding a new language:
 
 See the existing language implementations for reference:
 
-- **Go** (`outline/languages/go.go`) - Complex example with packages, imports, functions, methods, structs, interfaces
-- **TypeScript** (`outline/languages/ts.go`) - Type annotations, interfaces, classes, heritage clauses
-- **JavaScript** (`outline/languages/js.go`) - Classes, arrow functions, CommonJS requires
-- **Python** (`outline/languages/python.go`) - Docstrings, private symbol filtering
+- **Go** (`pkg/outline/languages/go.go`) - Complex example with packages, imports, functions, methods, structs, interfaces
+- **Java** (`pkg/outline/languages/java.go`) - Classes, interfaces, enums, modifiers, inheritance, Javadoc
+- **TypeScript** (`pkg/outline/languages/ts.go`) - Type annotations, interfaces, classes, heritage clauses
+- **JavaScript** (`pkg/outline/languages/js.go`) - Classes, arrow functions, CommonJS requires
+- **Python** (`pkg/outline/languages/python.go`) - Docstrings, private symbol filtering
 
 Each implementation demonstrates different tree-sitter integration patterns and language-specific considerations.

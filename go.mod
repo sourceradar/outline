@@ -1,4 +1,4 @@
-module github.com/sourceradar/mcp-outline
+module github.com/sourceradar/outline
 
 go 1.24.5
 
