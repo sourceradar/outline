@@ -88,17 +88,17 @@ release:
   prerelease: auto
   mode: replace
   header: |
-    ## Code Outline Tool {{.Tag}}
-    
+    ## Outline {{.Tag}}
+
     This release includes the command-line code analysis tool that generates structured outlines for multiple programming languages.
-    
+
     ### Supported Languages
     - Go (.go files)
-    - Java (.java files) 
+    - Java (.java files)
     - JavaScript (.js, .jsx files)
     - TypeScript (.ts, .tsx files)
     - Python (.py files)
-    
+
   footer: |
     **Full Changelog**: https://github.com/sourceradar/outline/compare/{{ .PreviousTag }}...{{ .Tag }}
 
@@ -118,16 +118,16 @@ brews:
       system "#{bin}/outline --help"
 
 notarize:
-  macos_native:
-    - enabled: '{{ isEnvSet "MACOS_CERTIFICATE_NAME" }}'
-      sign:
-        identity: "{{ .Env.MACOS_CERTIFICATE_NAME }}"
-        options: [runtime]
-      notarize:
-        apple_id: "{{ .Env.MACOS_NOTARY_APPLE_ID }}"
-        password: "{{ .Env.MACOS_NOTARY_PWD }}"
-        team_id: "{{ .Env.MACOS_NOTARY_TEAM_ID }}"
+  macos:
+    - enabled: '{{ isEnvSet "MACOS_NOTARY_ISSUER_ID" }}'
       ids:
         - outline
-      goos:
-        - darwin
+      sign:
+        certificate: "{{ .Env.MACOS_CERTIFICATE }}"
+        password: "{{ .Env.MACOS_CERTIFICATE_PWD }}"
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"
+        wait: true
+        timeout: "20m"

@@ -150,7 +150,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 			// Handle different types of export statements
 			if node.NamedChildCount() > 0 {
 				firstChild := node.NamedChild(0)
-				
+
 				// Check if it's a default export
 				isDefault := false
 				for i := 0; i < int(node.ChildCount()); i++ {
@@ -159,20 +159,20 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 						break
 					}
 				}
-				
+
 				switch firstChild.Kind() {
 				case "function_declaration", "generator_function_declaration":
 					nameNode := firstChild.ChildByFieldName("name")
 					if nameNode != nil {
 						name := getNodeText(nameNode, content)
-						
+
 						// Get parameters
 						paramNode := firstChild.ChildByFieldName("parameters")
 						paramText := ""
 						if paramNode != nil {
 							paramText = getNodeText(paramNode, content)
 						}
-						
+
 						// Get documentation comment if present
 						doc := findDocComment(node, content, "javascript")
 						if doc != "" {
@@ -181,7 +181,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 								result.WriteString(fmt.Sprintf("%s// %s\n", indent, strings.TrimSpace(line)))
 							}
 						}
-						
+
 						// Write export function declaration
 						lineNum := getNodeLineNumber(firstChild)
 						if isDefault {
@@ -192,12 +192,12 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 						result.WriteString(fmt.Sprintf("%s  // ...\n", indent))
 						result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 					}
-				
+
 				case "class_declaration":
 					nameNode := firstChild.ChildByFieldName("name")
 					if nameNode != nil {
 						name := getNodeText(nameNode, content)
-						
+
 						// Get extends clause if any
 						var extendsText string
 						for i := 0; i < int(firstChild.ChildCount()); i++ {
@@ -207,7 +207,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 								break
 							}
 						}
-						
+
 						// Get documentation comment if present
 						doc := findDocComment(node, content, "javascript")
 						if doc != "" {
@@ -216,7 +216,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 								result.WriteString(fmt.Sprintf("%s// %s\n", indent, strings.TrimSpace(line)))
 							}
 						}
-						
+
 						// Write export class declaration
 						lineNum := getNodeLineNumber(firstChild)
 						if isDefault {
@@ -224,7 +224,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 						} else {
 							result.WriteString(fmt.Sprintf("%sexport class %s%s { // line %d\n", indent, name, extendsText, lineNum))
 						}
-						
+
 						// Process class body
 						bodyNode := firstChild.ChildByFieldName("body")
 						if bodyNode != nil {
@@ -233,10 +233,10 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 								processNode(child, indentLevel+1)
 							}
 						}
-						
+
 						result.WriteString(fmt.Sprintf("%s}\n\n", indent))
 					}
-				
+
 				case "lexical_declaration", "variable_declaration":
 					// Handle export const/let/var declarations
 					if firstChild.NamedChildCount() > 0 {
@@ -245,10 +245,10 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 							if declarator.Kind() == "variable_declarator" && declarator.NamedChildCount() >= 2 {
 								nameNode := declarator.NamedChild(0)
 								valueNode := declarator.NamedChild(1)
-								
+
 								if valueNode.Kind() == "arrow_function" || valueNode.Kind() == "function" {
 									name := getNodeText(nameNode, content)
-									
+
 									// Get declaration type
 									declType := "var"
 									if firstChild.Kind() == "lexical_declaration" {
@@ -258,14 +258,14 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 											declType = "const"
 										}
 									}
-									
+
 									// Get parameters
 									paramNode := valueNode.ChildByFieldName("parameters")
 									paramText := ""
 									if paramNode != nil {
 										paramText = getNodeText(paramNode, content)
 									}
-									
+
 									// Get documentation comment if present
 									doc := findDocComment(node, content, "javascript")
 									if doc != "" {
@@ -274,7 +274,7 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 											result.WriteString(fmt.Sprintf("%s// %s\n", indent, strings.TrimSpace(line)))
 										}
 									}
-									
+
 									// Write export function
 									lineNum := getNodeLineNumber(firstChild)
 									if valueNode.Kind() == "arrow_function" {
@@ -301,13 +301,13 @@ func ExtractJSOutline(root *sitter.Node, content []byte) string {
 							}
 						}
 					}
-				
+
 				case "export_clause":
 					// Handle export { ... } statements
 					exportText := getNodeText(node, content)
 					lineNum := getNodeLineNumber(node)
 					result.WriteString(fmt.Sprintf("%s%s // line %d\n\n", indent, exportText, lineNum))
-				
+
 				default:
 					// Handle other export patterns like export * from '...'
 					exportText := getNodeText(node, content)
