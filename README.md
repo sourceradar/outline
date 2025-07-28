@@ -25,7 +25,7 @@ A command-line code analysis tool that generates structured outlines for multipl
 ## Installation
 
 ```bash
-go install github.com/sourceradar/outline@latest
+go install github.com/sourceradar/outline/cmd/outline@latest
 ```
 
 Add to Claude Code:
@@ -142,6 +142,7 @@ func (c *Config) Validate() error {
 ```bash
 # Build the project
 go build ./cmd/outline
+# or: make build
 
 # Run CLI directly
 go run ./cmd/outline file.go
@@ -151,12 +152,24 @@ go run ./cmd/outline --mcp
 
 # Run tests
 go test ./...
+# or: make test
 
 # Format code
 go fmt ./...
+# or: make fmt
 
 # Clean dependencies
 go mod tidy
+# or: make tidy
+
+# Install binary
+make install
+
+# Clean build artifacts
+make clean
+
+# Development with MCP inspector
+make dev
 ```
 
 ## Contributing
