@@ -65,24 +65,21 @@ Run as MCP server:
 outline --mcp
 ```
 
-#### Claude Desktop Integration
+#### Claude Code Integration
 
-Add to your Claude Desktop MCP configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+After installing outline, add it to Claude Code:
 
-```json
-{
-  "mcpServers": {
-    "outline": {
-      "command": "outline",
-      "args": ["--mcp"]
-    }
-  }
-}
+```bash
+claude mcp add -s user outline -- outline --mcp
 ```
 
 #### Other MCP Clients
 
-The server is compatible with any MCP client. For clients requiring stdio transport, use the same configuration format.
+The server is compatible with any MCP client that supports `STDIO` communication. You can run it with:
+
+```bash
+outline --mcp
+```
 
 #### Development with MCP Inspector
 
@@ -160,26 +157,6 @@ go fmt ./...
 
 # Clean dependencies
 go mod tidy
-```
-
-### Project Structure
-
-```
-├── cmd/outline/main.go        # Application entry point
-├── pkg/outline/               # Core outline extraction
-│   ├── outline.go            # Main extraction logic
-│   └── languages/            # Language-specific parsers
-│       ├── go.go
-│       ├── java.go
-│       ├── js.go
-│       ├── ts.go
-│       ├── python.go
-│       └── util.go
-├── internal/
-│   ├── cli/cli.go            # CLI implementation
-│   ├── server/               # MCP server implementation
-│   └── detector/             # Language detection
-└── go.mod                    # Go module definition
 ```
 
 ## Contributing

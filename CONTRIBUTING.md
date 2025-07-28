@@ -27,6 +27,26 @@ The outline tool uses tree-sitter parsers to analyze source code and generate st
 3. Integration with the main parser factory
 4. Comprehensive tests
 
+### Project Structure
+
+```
+├── cmd/outline/main.go        # Application entry point
+├── pkg/outline/               # Core outline extraction
+│   ├── outline.go            # Main extraction logic
+│   └── languages/            # Language-specific parsers
+│       ├── go.go
+│       ├── java.go
+│       ├── js.go
+│       ├── ts.go
+│       ├── python.go
+│       └── util.go
+├── internal/
+│   ├── cli/cli.go            # CLI implementation
+│   ├── server/               # MCP server implementation
+│   └── detector/             # Language detection
+└── go.mod                    # Go module definition
+```
+
 ## Quick Start
 
 To add support for a new language (e.g., Rust):
@@ -115,7 +135,7 @@ func processFunctionDeclaration(node *sitter.Node, content []byte, result *strin
     }
 
     name := getNodeText(nameNode, content)
-    
+
     // Get parameters
     paramNode := node.ChildByFieldName("parameters")
     paramText := ""
@@ -216,7 +236,7 @@ package languages
 import (
     "strings"
     "testing"
-    
+
     sitter "github.com/tree-sitter/go-tree-sitter"
     rust "github.com/tree-sitter/tree-sitter-rust/bindings/go"
 )
@@ -235,7 +255,7 @@ impl User {
     fn new(name: String, age: u32) -> Self {
         User { name, age }
     }
-    
+
     fn greet(&self) -> String {
         format!("Hello, {}", self.name)
     }
@@ -329,7 +349,7 @@ Use this helper function to explore node structure:
 func debugNode(node *sitter.Node, content []byte, depth int) {
     indent := strings.Repeat("  ", depth)
     fmt.Printf("%sNode: %s, Text: '%s'\n", indent, node.Kind(), getNodeText(node, content))
-    
+
     for i := 0; i < int(node.ChildCount()); i++ {
         child := node.Child(uint(i))
         if child != nil {
@@ -407,26 +427,26 @@ Follow this pattern:
 func Test{Language}OutlineWith{Feature}(t *testing.T) {
     // 1. Define test code string
     code := `...`
-    
+
     // 2. Set up parser
     parser := sitter.NewParser()
     defer parser.Close()
-    
+
     // 3. Parse code
     if err := parser.SetLanguage(sitter.NewLanguage(lang.Language())); err != nil {
         t.Fatalf("Failed to set language: %v", err)
     }
     tree := parser.Parse([]byte(code), nil)
     defer tree.Close()
-    
+
     // 4. Extract outline
     result := Extract{Language}Outline(tree.RootNode(), []byte(code))
-    
+
     // 5. Assert expected elements are present
     if !strings.Contains(result, "expected_content") {
         t.Error("Expected content to be included")
     }
-    
+
     // 6. Assert unwanted elements are absent (e.g., private symbols)
     if strings.Contains(result, "private_content") {
         t.Error("Private content should not be included")
@@ -440,14 +460,6 @@ func Test{Language}OutlineWith{Feature}(t *testing.T) {
 - **Parser reuse**: Consider caching parsers for frequently used languages
 - **Memory management**: Always call `defer parser.Close()` and `defer tree.Close()`
 - **Large files**: Consider streaming or chunking for very large source files
-
-## Common Pitfalls
-
-1. **Double colons in type annotations**: Check if tree-sitter already includes `:` in return_type
-2. **Missing inheritance clauses**: Use `class_heritage` instead of `superclass` for JS/TS
-3. **Wrong indent patterns**: Match the language's conventional indentation
-4. **Forgetting to handle named vs unnamed children**: Use `NamedChild()` for semantic nodes
-5. **Not handling edge cases**: Empty files, syntax errors, missing optional fields
 
 ## Contributing Guidelines
 
