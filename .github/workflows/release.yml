@@ -73,13 +73,14 @@ jobs:
           CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o dist/outline-darwin-arm64 ./cmd/outline
 
       - name: Sign macOS binaries
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
+        if: ${{ env.MACOS_CERTIFICATE != '' }}
         run: |
-          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > cert.p12
+          echo "$MACOS_CERTIFICATE" | base64 --decode > cert.p12
           quill sign dist/outline-darwin-amd64
           quill sign dist/outline-darwin-arm64
           rm cert.p12
         env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           QUILL_SIGN_P12: cert.p12
           QUILL_SIGN_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
@@ -104,18 +105,18 @@ jobs:
             echo "❌ CHANGELOG.md not found"
             exit 1
           fi
-          
+
           # Extract version from tag
           VERSION=${GITHUB_REF#refs/tags/}
           echo "Checking for version $VERSION in changelog"
-          
+
           # Check if version exists in changelog (without brackets only)
           if ! grep -q "## $VERSION" CHANGELOG.md; then
             echo "❌ Version $VERSION not found in CHANGELOG.md"
             echo "Please add an entry: ## $VERSION"
             exit 1
           fi
-          
+
           echo "✅ Changelog validated for $VERSION"
 
       - name: Download Linux artifacts
@@ -133,25 +134,25 @@ jobs:
       - name: Create archives
         run: |
           cd dist
-          tar -czf outline-linux-amd64.tar.gz outline-linux-amd64
-          tar -czf outline-linux-arm64.tar.gz outline-linux-arm64
-          tar -czf outline-darwin-amd64.tar.gz outline-darwin-amd64
-          tar -czf outline-darwin-arm64.tar.gz outline-darwin-arm64
-          sha256sum *.tar.gz > checksums.txt
+          tar -czf outline-linux-amd64.tar.gz ./outline-linux-amd64
+          tar -czf outline-linux-arm64.tar.gz ./outline-linux-arm64
+          tar -czf outline-darwin-amd64.tar.gz ./outline-darwin-amd64
+          tar -czf outline-darwin-arm64.tar.gz ./outline-darwin-arm64
+          sha256sum ./*.tar.gz > checksums.txt
 
       - name: Extract changelog entry
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "Extracting changelog entry for $VERSION"
-          
+
           # Extract the content between the version header and the next version or end of file
           awk "/^## $VERSION/{flag=1; next} /^## /{flag=0} flag" CHANGELOG.md > release_notes.md
-          
+
           # If no content found, fallback to just the version
           if [ ! -s release_notes.md ]; then
             echo "Release $VERSION" > release_notes.md
           fi
-          
+
           echo "Release notes content:"
           cat release_notes.md
 

@@ -80,13 +80,14 @@ jobs:
           CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o dist/outline-darwin-arm64 ./cmd/outline
 
       - name: Sign macOS binaries
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
+        if: ${{ env.MACOS_CERTIFICATE != '' }}
         run: |
-          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > cert.p12
+          echo "$MACOS_CERTIFICATE" | base64 --decode > cert.p12
           quill sign dist/outline-darwin-amd64
           quill sign dist/outline-darwin-arm64
           rm cert.p12
         env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           QUILL_SIGN_P12: cert.p12
           QUILL_SIGN_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
