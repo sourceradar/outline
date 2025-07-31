@@ -24,21 +24,34 @@ A command-line code analysis tool that generates structured outlines for multipl
 
 ## Installation
 
+### Using the install script (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sourceradar/outline/main/install.sh | bash
+```
+
+This will download and install the latest release to `~/.local/bin/outline`. Make sure `~/.local/bin` is in your PATH.
+
+### Using Go
+
 ```bash
 go install github.com/sourceradar/outline/cmd/outline@latest
 ```
 
-Add to Claude Code:
-```bash
-claude mcp add -s user outline -- outline --mcp
-```
-
-Or build from source:
+### Building from source
 
 ```bash
 git clone https://github.com/sourceradar/outline.git
 cd outline
 go build ./cmd/outline
+```
+
+### Adding to Claude Code
+
+After installation, add outline as an MCP server to Claude Code:
+
+```bash
+claude mcp add -s user outline -- outline --mcp
 ```
 
 ## Usage

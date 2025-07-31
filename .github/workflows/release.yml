@@ -9,13 +9,11 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -26,16 +24,143 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+  build-linux:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          distribution: goreleaser
-          version: '~> v2'
-          args: release --clean
+          go-version: '1.24.5'
+          cache: true
+
+      - name: Build Linux binaries
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dist/outline-linux-amd64 ./cmd/outline
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o dist/outline-linux-arm64 ./cmd/outline
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binaries
+          path: dist/outline-linux-*
+
+  build-macos:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.5'
+          cache: true
+
+      - name: Install Quill
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/quill/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Build macOS binaries
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o dist/outline-darwin-amd64 ./cmd/outline
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o dist/outline-darwin-arm64 ./cmd/outline
+
+      - name: Sign macOS binaries
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
+        run: |
+          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > cert.p12
+          quill sign dist/outline-darwin-amd64
+          quill sign dist/outline-darwin-arm64
+          rm cert.p12
+        env:
+          QUILL_SIGN_P12: cert.p12
+          QUILL_SIGN_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binaries
+          path: dist/outline-darwin-*
+
+  release:
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate changelog
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "❌ CHANGELOG.md not found"
+            exit 1
+          fi
+          
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Checking for version $VERSION in changelog"
+          
+          # Check if version exists in changelog (without brackets only)
+          if ! grep -q "## $VERSION" CHANGELOG.md; then
+            echo "❌ Version $VERSION not found in CHANGELOG.md"
+            echo "Please add an entry: ## $VERSION"
+            exit 1
+          fi
+          
+          echo "✅ Changelog validated for $VERSION"
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+          path: dist/
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+          path: dist/
+
+      - name: Create archives
+        run: |
+          cd dist
+          tar -czf outline-linux-amd64.tar.gz outline-linux-amd64
+          tar -czf outline-linux-arm64.tar.gz outline-linux-arm64
+          tar -czf outline-darwin-amd64.tar.gz outline-darwin-amd64
+          tar -czf outline-darwin-arm64.tar.gz outline-darwin-arm64
+          sha256sum *.tar.gz > checksums.txt
+
+      - name: Extract changelog entry
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Extracting changelog entry for $VERSION"
+          
+          # Extract the content between the version header and the next version or end of file
+          awk "/^## $VERSION/{flag=1; next} /^## /{flag=0} flag" CHANGELOG.md > release_notes.md
+          
+          # If no content found, fallback to just the version
+          if [ ! -s release_notes.md ]; then
+            echo "Release $VERSION" > release_notes.md
+          fi
+          
+          echo "Release notes content:"
+          cat release_notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+          body_path: release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
-          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
-          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
