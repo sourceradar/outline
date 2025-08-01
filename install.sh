@@ -95,8 +95,8 @@ curl -L -o "$TMP_ARCHIVE" "$LATEST_RELEASE_URL"
 print_step "Extracting $ARCHIVE_NAME"
 tar -xzf "$TMP_ARCHIVE" -C "$TMP_DIR"
 
-# The binary should be named ${BINARY_NAME}-${OS_NAME}-${ARCH} inside the archive
-EXTRACTED_BINARY="$TMP_DIR/${BINARY_NAME}-${OS_NAME}-${ARCH}"
+# The binary should be named ${BINARY_NAME} inside the archive
+EXTRACTED_BINARY="$TMP_DIR/$BINARY_NAME"
 if [ ! -f "$EXTRACTED_BINARY" ]; then
   print_error "Expected binary not found in archive: $EXTRACTED_BINARY"
   print_error "Archive contents:"

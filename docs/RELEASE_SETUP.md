@@ -15,6 +15,13 @@ Configure the following secrets in your GitHub repository settings (`Settings > 
 ### Code Signing Secrets
 - `MACOS_CERTIFICATE`: Base64-encoded .p12 certificate file
 - `MACOS_CERTIFICATE_PWD`: Password for the .p12 certificate
+- `MACOS_CERTIFICATE_NAME`: Name of the certificate (Developer ID Application: Your Name)
+- `KEYCHAIN_PASSWORD`: Password for temporary keychain
+
+### Notarization Secrets (Required for Release Tags Only)
+- `APPLE_ID`: Your Apple ID email
+- `APPLE_PASSWORD`: App-specific password for your Apple ID
+- `APPLE_TEAM_ID`: Your Apple Developer Team ID
 
 ## Setting up Code Signing
 
@@ -79,7 +86,8 @@ GitHub Actions will automatically:
 2. **Build Platform Binaries**:
    - Linux: amd64, arm64 (built on ubuntu-latest)
    - macOS: amd64, arm64 (built on macos-latest)
-3. **Sign macOS Binaries**: Using Quill (if certificates configured)
+3. **Sign macOS Binaries**: Using codesign (if certificates configured)
+4. **Notarize Binaries**: For release tags only, using xcrun notarytool
 4. **Validate Changelog**: Ensure version exists in CHANGELOG.md
 5. **Create Release**: Package binaries and upload to GitHub
 6. **Generate Checksums**: SHA256 checksums for all binaries
@@ -91,14 +99,15 @@ GitHub Actions will automatically:
 
 ## Configuration Files
 
-- `.github/workflows/ci.yml`: CI workflow with platform-specific builds
-- `.github/workflows/release.yml`: Release workflow with changelog validation
+- `.github/workflows/ci.yml`: Combined CI and release workflow with platform-specific builds
+- `Makefile`: Build targets for different platforms using `dist/$os-$arch/outline` structure
 - `CHANGELOG.md`: Required for release validation
 
 ## How It Works
 
 1. **Platform-Native Builds**: Each platform builds its own binaries to avoid CGO cross-compilation issues
-2. **Code Signing**: macOS binaries are signed using Quill (cross-platform signing tool)
+2. **Code Signing**: macOS binaries are signed using codesign with temporary keychain
+3. **Conditional Notarization**: Only release builds (tags) are notarized to save time on regular CI
 3. **Changelog Validation**: Release fails if version tag not found in CHANGELOG.md
 4. **Artifact Packaging**: Binaries are packaged as tar.gz archives with checksums
 5. **GitHub Release**: Archives are automatically attached to the release
@@ -131,8 +140,9 @@ Test builds locally to debug issues:
 # Build for current platform
 make build
 
-# Test cross-compilation (Linux from macOS)
-CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build ./cmd/outline
+# Build for specific platform (uses Makefile)
+GOOS=linux GOARCH=amd64 make build
+GOOS=darwin GOARCH=arm64 make build
 
 # Run tests
 make test
@@ -146,8 +156,25 @@ make test
 4. ✅ Watch GitHub Actions for build status
 5. ✅ Verify release artifacts are uploaded
 
+## Binary Structure
+
+Binaries are now built in a structured format:
+- `dist/linux-amd64/outline`
+- `dist/linux-arm64/outline`
+- `dist/darwin-amd64/outline` 
+- `dist/darwin-arm64/outline`
+
+This allows the installer to rename the binary to just `outline` while preserving notarization.
+
+## Notarization Notes
+
+- **Releases only**: Notarization only runs for git tags starting with `v` to save time
+- **Stapled tickets**: Notarization tickets are stapled to binaries for offline verification
+- **Path independent**: Stapled binaries can be renamed and moved without losing notarization
+
 ## Security Notes
 
 - Code signing is optional - releases work without certificates
 - Keep certificates and passwords secure if using signing
 - Monitor certificate expiration dates
+- Notarization requires valid Apple Developer account

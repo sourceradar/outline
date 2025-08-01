@@ -3,6 +3,7 @@ module github.com/sourceradar/outline
 go 1.24.5
 
 require (
+	github.com/alex-pinkus/tree-sitter-swift v0.0.0-20250630054910-190aedc3042a
 	github.com/modelcontextprotocol/go-sdk v0.2.0
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/tree-sitter/tree-sitter-go v0.23.4

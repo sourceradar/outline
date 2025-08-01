@@ -7,6 +7,7 @@ import (
 	java "github.com/tree-sitter/tree-sitter-java/bindings/go"
 	javascript "github.com/tree-sitter/tree-sitter-javascript/bindings/go"
 	python "github.com/tree-sitter/tree-sitter-python/bindings/go"
+	swift "github.com/alex-pinkus/tree-sitter-swift/bindings/go"
 	typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
 
 	"github.com/sourceradar/outline/pkg/outline/languages"
@@ -45,6 +46,8 @@ func ExtractOutline(content []byte, language string) (string, error) {
 		return languages.ExtractJavaOutline(root, content), nil
 	case "javascript":
 		return languages.ExtractJSOutline(root, content), nil
+	case "swift":
+		return languages.ExtractSwiftOutline(root, content), nil
 	case "typescript":
 		return languages.ExtractTSOutline(root, content), nil
 	case "python":
@@ -65,6 +68,8 @@ func createParserForLanguage(language string) (*sitter.Parser, error) {
 		err = parser.SetLanguage(sitter.NewLanguage(java.Language()))
 	case "javascript":
 		err = parser.SetLanguage(sitter.NewLanguage(javascript.Language()))
+	case "swift":
+		err = parser.SetLanguage(sitter.NewLanguage(swift.Language()))
 	case "typescript":
 		err = parser.SetLanguage(sitter.NewLanguage(typescript.LanguageTypescript()))
 	case "tsx":

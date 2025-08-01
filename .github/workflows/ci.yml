@@ -56,15 +56,14 @@ jobs:
 
       - name: Build Linux binaries
         run: |
-          mkdir -p dist
-          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dist/outline-linux-amd64 ./cmd/outline
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc go build -o dist/outline-linux-arm64 ./cmd/outline
+          GOOS=linux GOARCH=amd64 make build
+          GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc make build
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-binaries
-          path: dist/outline-linux-*
+          path: dist/linux-*/outline
           retention-days: ${{ startsWith(github.ref, 'refs/tags/') && 90 || 7 }}
 
   build-macos:
@@ -79,33 +78,58 @@ jobs:
           go-version: '1.24.5'
           cache: true
 
-      - name: Install Quill
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/quill/main/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Build macOS binaries
         run: |
-          mkdir -p dist
-          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o dist/outline-darwin-amd64 ./cmd/outline
-          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o dist/outline-darwin-arm64 ./cmd/outline
+          GOOS=darwin GOARCH=amd64 make build
+          GOOS=darwin GOARCH=arm64 make build
 
       - name: Sign macOS binaries
         if: ${{ env.MACOS_CERTIFICATE != '' }}
         run: |
           echo "$MACOS_CERTIFICATE" | base64 --decode > cert.p12
-          quill sign dist/outline-darwin-amd64
-          quill sign dist/outline-darwin-arm64
+          # Import certificate
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import cert.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          # Sign binaries
+          codesign --sign "$MACOS_CERTIFICATE_NAME" --timestamp --options runtime dist/darwin-amd64/outline
+          codesign --sign "$MACOS_CERTIFICATE_NAME" --timestamp --options runtime dist/darwin-arm64/outline
+          # Clean up
           rm cert.p12
+          security delete-keychain build.keychain
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          QUILL_SIGN_P12: cert.p12
-          QUILL_SIGN_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: Notarize macOS binaries (releases only)
+        if: ${{ env.MACOS_CERTIFICATE != '' && startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          # Create zip archives for notarization
+          ditto -c -k --sequesterRsrc --keepParent dist/darwin-amd64/outline dist/darwin-amd64-outline.zip
+          ditto -c -k --sequesterRsrc --keepParent dist/darwin-arm64/outline dist/darwin-arm64-outline.zip
+          # Submit for notarization
+          xcrun notarytool submit dist/darwin-amd64-outline.zip --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          xcrun notarytool submit dist/darwin-arm64-outline.zip --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          # Staple the notarization tickets
+          xcrun stapler staple dist/darwin-amd64/outline
+          xcrun stapler staple dist/darwin-arm64/outline
+          # Clean up zip files
+          rm dist/darwin-amd64-outline.zip dist/darwin-arm64-outline.zip
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-binaries
-          path: dist/outline-darwin-*
+          path: dist/darwin-*/outline
           retention-days: ${{ startsWith(github.ref, 'refs/tags/') && 90 || 7 }}
 
   release:
@@ -153,10 +177,10 @@ jobs:
       - name: Create archives
         run: |
           cd dist
-          tar -czf outline-linux-amd64.tar.gz ./outline-linux-amd64
-          tar -czf outline-linux-arm64.tar.gz ./outline-linux-arm64
-          tar -czf outline-darwin-amd64.tar.gz ./outline-darwin-amd64
-          tar -czf outline-darwin-arm64.tar.gz ./outline-darwin-arm64
+          tar -czf outline-linux-amd64.tar.gz -C linux-amd64 outline
+          tar -czf outline-linux-arm64.tar.gz -C linux-arm64 outline
+          tar -czf outline-darwin-amd64.tar.gz -C darwin-amd64 outline
+          tar -czf outline-darwin-arm64.tar.gz -C darwin-arm64 outline
           sha256sum ./*.tar.gz > checksums.txt
 
       - name: Extract changelog entry
