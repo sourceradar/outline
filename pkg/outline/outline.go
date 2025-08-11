@@ -2,12 +2,12 @@ package outline
 
 import (
 	"fmt"
+	swift "github.com/alex-pinkus/tree-sitter-swift/bindings/go"
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	golang "github.com/tree-sitter/tree-sitter-go/bindings/go"
 	java "github.com/tree-sitter/tree-sitter-java/bindings/go"
 	javascript "github.com/tree-sitter/tree-sitter-javascript/bindings/go"
 	python "github.com/tree-sitter/tree-sitter-python/bindings/go"
-	swift "github.com/alex-pinkus/tree-sitter-swift/bindings/go"
 	typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
 
 	"github.com/sourceradar/outline/pkg/outline/languages"
