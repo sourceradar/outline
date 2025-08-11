@@ -9,31 +9,19 @@ import (
 func DetectLanguage(filePath string) (string, bool) {
 	ext := strings.ToLower(filepath.Ext(filePath))
 
-	switch ext {
-	case ".go":
-		return "go", true
-	case ".java":
-		return "java", true
-	case ".js", ".jsx":
-		return "javascript", true
-	case ".swift":
-		return "swift", true
-	case ".ts":
-		return "typescript", true
-	case ".tsx":
-		return "tsx", true
-	case ".py":
-		return "python", true
-	case ".c", ".h":
-		return "c", true
-	case ".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".hh":
-		return "cpp", true
-	default:
-		return "", false
+	languages := SupportedLanguages()
+	for langName, langInfo := range languages {
+		for _, supportedExt := range langInfo.Extensions {
+			if ext == supportedExt {
+				return langName, true
+			}
+		}
 	}
+
+	return "", false
 }
 
 // SupportedExtensions returns a list of supported file extensions
 func SupportedExtensions() []string {
-	return []string{".go", ".java", ".js", ".jsx", ".swift", ".ts", ".tsx", ".py", ".c", ".h", ".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".hh"}
+	return GetAllExtensions()
 }

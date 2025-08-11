@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/sourceradar/outline/internal/cli"
+	"github.com/sourceradar/outline/internal/detector"
 	"github.com/sourceradar/outline/internal/server"
 )
 
@@ -23,13 +25,14 @@ func main() {
 	var showVersion bool
 
 	flag.BoolVar(&mcpMode, "mcp", false, "Run in MCP server mode")
-	flag.StringVar(&language, "language", "", "Override language detection (go, java, javascript, typescript, python)")
+	flag.StringVar(&language, "language", "", fmt.Sprintf("Override language detection (%s)", strings.Join(detector.GetLanguageNames(), ", ")))
 	flag.BoolVar(&help, "help", false, "Show help message")
 	flag.BoolVar(&help, "h", false, "Show help message")
 	flag.BoolVar(&showVersion, "version", false, "Show version information")
 	flag.BoolVar(&showVersion, "v", false, "Show version information")
 
 	flag.Usage = func() {
+		supportedLangs := strings.Join(detector.GetLanguageNames(), ", ")
 		fmt.Fprintf(os.Stderr, `outline - A code analysis tool that generates structured outlines
 
 USAGE:
@@ -37,8 +40,8 @@ USAGE:
     outline --mcp
 
 OPTIONS:
-    --language <lang>    Override language detection
-                        Supported: go, java, javascript, typescript, python
+    --language <lang>   Override language detection
+                        Supported: %s
     --mcp               Run in MCP (Model Context Protocol) server mode
     --version, -v       Show version information
     --help, -h          Show this help message
@@ -58,7 +61,7 @@ For MCP server mode, add to your MCP client configuration:
     }
   }
 }
-`)
+`, supportedLangs)
 	}
 
 	flag.Parse()

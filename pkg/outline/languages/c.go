@@ -81,7 +81,7 @@ func processCFunction(node *tree_sitter.Node, content []byte, result *strings.Bu
 
 	// Get full function signature
 	signature := extractFunctionSignature(node, content)
-	
+
 	// Get documentation comment if present
 	doc := findDocComment(node, content, "c")
 	if doc != "" {
@@ -101,7 +101,7 @@ func processCFunction(node *tree_sitter.Node, content []byte, result *strings.Bu
 
 func processCDeclaration(node *tree_sitter.Node, content []byte, result *strings.Builder, indent string) {
 	declarationText := getNodeText(node, content)
-	
+
 	// Skip function declarations that are just prototypes
 	if strings.Contains(declarationText, ";") && !strings.Contains(declarationText, "{") {
 		lineNum := getNodeLineNumber(node)
@@ -158,7 +158,7 @@ func processCStructUnionEnum(node *tree_sitter.Node, content []byte, result *str
 
 func processCStructBody(bodyNode *tree_sitter.Node, indentLevel int, content []byte, result *strings.Builder) {
 	indent := strings.Repeat("\t", indentLevel)
-	
+
 	for i := uint(0); i < bodyNode.NamedChildCount(); i++ {
 		child := bodyNode.NamedChild(i)
 		if child.Kind() == "field_declaration" {
@@ -180,7 +180,7 @@ func processCTypedef(node *tree_sitter.Node, content []byte, result *strings.Bui
 // C++ specific functions
 func processCNamespace(node *tree_sitter.Node, indentLevel int, content []byte, result *strings.Builder) {
 	indent := strings.Repeat("\t", indentLevel)
-	
+
 	nameNode := node.ChildByFieldName("name")
 	name := ""
 	if nameNode != nil {
@@ -266,7 +266,7 @@ func processCClassBody(bodyNode *tree_sitter.Node, indent string, content []byte
 
 	for i := uint(0); i < bodyNode.NamedChildCount(); i++ {
 		child := bodyNode.NamedChild(i)
-		
+
 		switch child.Kind() {
 		case "access_specifier":
 			visibility := getNodeText(child, content)
@@ -320,7 +320,7 @@ func extractFunctionName(declaratorNode *tree_sitter.Node, content []byte) strin
 func extractFunctionSignature(node *tree_sitter.Node, content []byte) string {
 	// Try to build a clean function signature
 	var parts []string
-	
+
 	// Get return type if present
 	typeNode := node.ChildByFieldName("type")
 	if typeNode != nil {
@@ -329,25 +329,25 @@ func extractFunctionSignature(node *tree_sitter.Node, content []byte) string {
 			parts = append(parts, returnType)
 		}
 	}
-	
+
 	// Get declarator (contains function name and parameters)
 	declaratorNode := node.ChildByFieldName("declarator")
 	if declaratorNode != nil {
 		declaratorText := getNodeText(declaratorNode, content)
 		parts = append(parts, declaratorText)
 	}
-	
+
 	signature := strings.Join(parts, " ")
-	
+
 	// Clean up the signature
 	signature = strings.ReplaceAll(signature, "\n", " ")
 	signature = strings.ReplaceAll(signature, "\t", " ")
-	
+
 	// Normalize multiple spaces to single space
 	for strings.Contains(signature, "  ") {
 		signature = strings.ReplaceAll(signature, "  ", " ")
 	}
-	
+
 	return strings.TrimSpace(signature)
 }
 
@@ -363,11 +363,11 @@ func ExtractCOutline(root *tree_sitter.Node, content []byte) string {
 
 func processCTemplateDeclaration(node *tree_sitter.Node, indentLevel int, content []byte, result *strings.Builder) {
 	indent := strings.Repeat("\t", indentLevel)
-	
+
 	// Get the template declaration text
 	templateText := getNodeText(node, content)
 	lines := strings.Split(templateText, "\n")
-	
+
 	// Get documentation comment if present
 	doc := findDocComment(node, content, "cpp")
 	if doc != "" {
@@ -380,13 +380,13 @@ func processCTemplateDeclaration(node *tree_sitter.Node, indentLevel int, conten
 			}
 		}
 	}
-	
+
 	lineNum := getNodeLineNumber(node)
 	// Write first line (template declaration)
 	if len(lines) > 0 {
 		result.WriteString(fmt.Sprintf("%s%s // line %d\n", indent, strings.TrimSpace(lines[0]), lineNum))
 	}
-	
+
 	// Process the templated declaration (class, function, etc.)
 	for i := uint(0); i < node.NamedChildCount(); i++ {
 		child := node.NamedChild(i)
