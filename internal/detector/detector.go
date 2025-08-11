@@ -24,6 +24,10 @@ func DetectLanguage(filePath string) (string, bool) {
 		return "tsx", true
 	case ".py":
 		return "python", true
+	case ".c", ".h":
+		return "c", true
+	case ".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".hh":
+		return "cpp", true
 	default:
 		return "", false
 	}
@@ -31,5 +35,5 @@ func DetectLanguage(filePath string) (string, bool) {
 
 // SupportedExtensions returns a list of supported file extensions
 func SupportedExtensions() []string {
-	return []string{".go", ".java", ".js", ".jsx", ".swift", ".ts", ".tsx", ".py"}
+	return []string{".go", ".java", ".js", ".jsx", ".swift", ".ts", ".tsx", ".py", ".c", ".h", ".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".hh"}
 }

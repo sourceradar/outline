@@ -15,5 +15,7 @@ require (
 
 require (
 	github.com/mattn/go-pointer v0.0.1 // indirect
+	github.com/tree-sitter/tree-sitter-c v0.24.1 // indirect
+	github.com/tree-sitter/tree-sitter-cpp v0.23.4 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 )
